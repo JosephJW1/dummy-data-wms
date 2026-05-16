@@ -1,5 +1,5 @@
 import React, { useMemo, useEffect } from 'react';
-import { ArrowDown, ArrowUp, ArrowUpDown, ChevronLeft, ChevronRight, Download } from 'lucide-react';
+import { ArrowDown, ArrowUp, ArrowUpDown, ChevronLeft, ChevronRight, Download, Copy } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import type { ColumnDef } from '../types';
 
@@ -53,6 +53,11 @@ const DataTable: React.FC<DataTableProps> = ({ columns, data, activeTab, isDarkM
 
   const handleFilterChange = (key: string, value: string) => {
     updateParams({ [`f_${key}`]: value || null, page: '1' });
+  };
+
+  const handleCopy = (e: React.MouseEvent, text: string) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(text);
   };
 
   // --- Data Processing ---
@@ -196,13 +201,26 @@ const DataTable: React.FC<DataTableProps> = ({ columns, data, activeTab, isDarkM
                         {isNull ? (
                           <span className={`italic ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>null</span>
                         ) : (
-                          <button
-                            onClick={() => targetId && onCellClick(targetTab, targetId)}
-                            className="text-blue-500 hover:text-blue-600 hover:underline focus:outline-none font-medium"
-                            title={`Go to ${targetTab} detail`}
-                          >
-                            {String(val)}
-                          </button>
+                          <div className="flex items-center gap-2 group">
+                            <button
+                              onClick={() => targetId && onCellClick(targetTab, targetId)}
+                              className={`${isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-black'} hover:underline focus:outline-none font-medium text-left`}
+                              title={`Go to ${targetTab} detail`}
+                            >
+                              {String(val)}
+                            </button>
+                            <button
+                              onClick={(e) => handleCopy(e, String(val))}
+                              className={`p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity focus:opacity-100 ${
+                                isDarkMode 
+                                  ? 'hover:bg-gray-700 text-gray-400 hover:text-gray-200' 
+                                  : 'hover:bg-gray-200 text-gray-400 hover:text-gray-700'
+                              }`}
+                              title="Copy to clipboard"
+                            >
+                              <Copy size={14} />
+                            </button>
+                          </div>
                         )}
                       </td>
                     );
