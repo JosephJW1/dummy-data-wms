@@ -4,13 +4,21 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       allowNull: false,
     },
+    locationFromId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
     locationToId: {
       type: DataTypes.INTEGER,
       allowNull: true,
     },
+    palletRefFrom: {
+      type: DataTypes.BIGINT,
+      allowNull: true,
+    },
     palletRefTo: {
       type: DataTypes.BIGINT,
-      allowNull: false,
+      allowNull: true,
     },
     pickListId: {
       type: DataTypes.INTEGER,
