@@ -1,11 +1,11 @@
 module.exports = {
   SHIFTS: {
-    EARLY: { startHour: 4, startMinute: 26, endHour: 4, endMinute: 45 },
-    LATE: { startHour: 4, startMinute: 46, endHour: 5, endMinute: 5 }
+    EARLY: { startHour: 4, startMinute: 48, endHour: 5, endMinute: 7 },
+    LATE: { startHour: 5, startMinute: 8, endHour: 5, endMinute: 27 }
   },
   
   CRON_SCHEDULES: {
-    REPLENISHMENT_EVALUATION: '25 4 * * *',
+    REPLENISHMENT_EVALUATION: '47 4 * * *',
   },
   
   PUT_AWAY: {

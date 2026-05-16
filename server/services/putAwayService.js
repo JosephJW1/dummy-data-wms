@@ -133,8 +133,6 @@ cron.schedule('* * * * *', async () => {
       const emptyLocations = await Location.findAll({
         where: {
           id: { [Op.notIn]: [...usedLocationIds, ...pickFaceIds] },
-          // NOTE: Uncomment and adapt the line below if Product has a chamberId field
-          // chamberId: productData.chamberId 
         }
       });
 
@@ -151,10 +149,13 @@ cron.schedule('* * * * *', async () => {
         status: 'Available'
       });
 
+      // --- FIXED: Explicitly recording "From" details ---
       await Transaction.create({
         stockId: palletToPutAway.id,
-        locationToId: randomLocation.id,
-        palletRefTo: palletToPutAway.palletRef,
+        locationFromId: goodsInLocation.id,       // Explicitly marks it came from Goods-In
+        locationToId: randomLocation.id,          
+        palletRefFrom: palletToPutAway.palletRef, // Copies the pallet ref perfectly
+        palletRefTo: palletToPutAway.palletRef,   
         pickListId: null,
         quantity: palletToPutAway.quantity,
         type: 'Put Away',

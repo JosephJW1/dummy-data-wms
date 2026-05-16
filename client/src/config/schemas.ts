@@ -139,15 +139,23 @@ export const VIEW_SCHEMAS: Record<string, ColumnDef[]> = {
 
 export const getEnumOptions = (tab: string, key: string) => {
   if (key === 'unitOfMeasurement') return ["kg", "case"];
-  if (key === 'role') return ["Picker", "Admin"];
+  
+  // Updated User Roles
+  if (key === 'role') return ["Operative", "Admin"]; 
+  if (key === 'shift') return ["Early", "Late"]; 
+  
   if (key === 'holdReason') return ["QCHold", "PalletMissing"];
+  
   if (key === 'status') {
-    if (tab === 'Stocks') return ["Available", "Allocated", "Picked", "Hold"];
+    // Added "Received"
+    if (tab === 'Stocks') return ["Received", "Available", "Allocated", "Picked", "Hold"]; 
     if (tab === 'Tasks') return ["Allocated", "Completed"];
   }
+  
   if (key === 'type') {
     if (tab === 'Tasks') return ["Pick", "Replenishment", "Load", "Dispatch"];
-    if (tab === 'Transactions') return ["Allocate", "Complete"];
+    // Updated to match your exact DB ENUMs!
+    if (tab === 'Transactions') return ["Received", "Put Away", "Picked", "Replenished", "Loaded", "Dispatched"];
   }
   return null;
 };
