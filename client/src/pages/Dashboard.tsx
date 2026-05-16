@@ -5,10 +5,42 @@ import { TAB_ICONS, SCHEMAS, VIEW_SCHEMAS } from '../config/schemas';
 import DataTable from '../components/DataTable';
 import type { ColumnDef } from '../types';
 
+// --- HARDCODED TEST DATA ---
+const TEST_CHAMBERS = [
+  { id: 1, name: 'freezer 1' },
+  { id: 2, name: 'freezer 2' },
+  { id: 3, name: 'freezer 3' },
+  { id: 4, name: 'chiller 1' },
+  { id: 5, name: 'chiller 2' },
+  { id: 6, name: 'chiller 3' },
+  { id: 7, name: 'ambient 1' },
+  { id: 8, name: 'ambient 2' },
+  { id: 9, name: 'ambient 3' }
+];
+
 export default function Dashboard() {
-  const [isDarkMode, setIsDarkMode] = useState(false);
-  const [isNavMinimized, setIsNavMinimized] = useState(false);
+  // --- PERSISTENT UI STATE (Local Storage) ---
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    const stored = localStorage.getItem('wms_dark_mode');
+    return stored ? JSON.parse(stored) : false;
+  });
+
+  const [isNavMinimized, setIsNavMinimized] = useState(() => {
+    const stored = localStorage.getItem('wms_nav_minimized');
+    return stored ? JSON.parse(stored) : false;
+  });
+
   const [isRightMenuOpen, setIsRightMenuOpen] = useState(false);
+  const [useTestChambers, setUseTestChambers] = useState(false);
+
+  // Sync UI state changes back to local storage
+  useEffect(() => {
+    localStorage.setItem('wms_dark_mode', JSON.stringify(isDarkMode));
+  }, [isDarkMode]);
+
+  useEffect(() => {
+    localStorage.setItem('wms_nav_minimized', JSON.stringify(isNavMinimized));
+  }, [isNavMinimized]);
   
   // --- URL Routing Hooks ---
   const { tab } = useParams<{ tab: string }>();
@@ -134,6 +166,11 @@ export default function Dashboard() {
 
   // Derived View Data
   const viewData = useMemo(() => {
+    // Intercept with test data if toggled
+    if (activeTab === 'Chambers' && useTestChambers) {
+      return TEST_CHAMBERS;
+    }
+
     const data = databases[activeTab];
     if (!data) return [];
     
@@ -187,7 +224,6 @@ export default function Dashboard() {
         const stock = databases.Stocks.find(s => s.id === row.stockId);
         const product = stock ? databases.Products.find(p => p.id === stock.productId) : null;
         
-        // NOW we get the Location From based on the historical Transaction row, not the current Stock!
         const locationFrom = databases.Locations.find(l => l.id === row.locationFromId); 
         const locationTo = databases.Locations.find(l => l.id === row.locationToId);
         
@@ -197,8 +233,8 @@ export default function Dashboard() {
         return {
           ...row,
           _productId: product?.id || null,
-          _locationFromId: row.locationFromId || null, // Directly from row
-          _locationToId: row.locationToId || null,     // Directly from row
+          _locationFromId: row.locationFromId || null,
+          _locationToId: row.locationToId || null,
           _stockId: stock?.id || null,
           _pickListId: pickList?.id || null,
           _completedByUser: user?.id || null,
@@ -207,7 +243,7 @@ export default function Dashboard() {
           productDescription: product?.description || null,
           locationFrom: locationFrom?.code || null,
           locationTo: locationTo?.code || null,
-          palletRefFrom: row.palletRefFrom || null,   // Directly from row
+          palletRefFrom: row.palletRefFrom || null,
           palletRefTo: row.palletRefTo || null,
           pickList: pickList?.ref || null,
           quantity: row.quantity || null,
@@ -219,7 +255,7 @@ export default function Dashboard() {
     }
     
     return data;
-  }, [databases, activeTab]);
+  }, [databases, activeTab, useTestChambers]);
 
   // --- Manage Columns via URL ---
   const handleDragStart = (e: React.DragEvent, idx: number) => {
@@ -379,7 +415,22 @@ export default function Dashboard() {
             </div>
           ) : (
             <div className="flex flex-col gap-4">
-              <div className="flex justify-end">
+              <div className="flex justify-end gap-3">
+                
+                {/* --- TEST DATA TOGGLE --- */}
+                {activeTab === 'Chambers' && (
+                  <button 
+                    onClick={() => setUseTestChambers(!useTestChambers)}
+                    className={`flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded shadow-sm border transition-colors ${
+                      useTestChambers
+                        ? 'bg-amber-100 border-amber-300 text-amber-800 hover:bg-amber-200' 
+                        : (isDarkMode ? 'bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700' : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50')
+                    }`}
+                  >
+                    {useTestChambers ? 'Disable Test Data' : 'Enable Test Data'}
+                  </button>
+                )}
+
                 <button 
                   onClick={fetchAllData}
                   className={`flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded shadow-sm border transition-colors ${

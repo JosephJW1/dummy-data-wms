@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect, useState } from 'react';
+import React, { useMemo, useEffect, useState, useRef } from 'react';
 import { ArrowDown, ArrowUp, ArrowUpDown, ChevronLeft, ChevronRight, Download, Copy, Check } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import type { ColumnDef } from '../types';
@@ -11,11 +11,50 @@ interface DataTableProps {
   onCellClick: (tab: string, id: any) => void;
 }
 
+// --- NEW: Isolated Copy Button Component ---
+const ActionCopyButton = ({ text, isDarkMode }: { text: string; isDarkMode: boolean }) => {
+  const [isCopied, setIsCopied] = useState(false);
+  
+  // FIX: Using ReturnType<typeof setTimeout> instead of NodeJS.Timeout
+  // This works perfectly in browser environments without throwing TS errors.
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleCopy = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(text);
+    setIsCopied(true);
+
+    // Clear any existing timer if the user clicks the same button rapidly
+    if (timerRef.current) clearTimeout(timerRef.current);
+    
+    // Set a fresh timer for this specific button
+    timerRef.current = setTimeout(() => {
+      setIsCopied(false);
+      timerRef.current = null;
+    }, 500);
+  };
+
+  return (
+    <button
+      onClick={handleCopy}
+      className={`p-1 rounded transition-colors focus:outline-none ${
+        isDarkMode 
+          ? 'hover:bg-gray-700 text-gray-400 hover:text-gray-200' 
+          : 'hover:bg-gray-200 text-gray-400 hover:text-gray-700'
+      }`}
+      title="Copy to clipboard"
+    >
+      {isCopied ? (
+        <Check size={14} className="text-green-500" />
+      ) : (
+        <Copy size={14} />
+      )}
+    </button>
+  );
+};
+
 const DataTable: React.FC<DataTableProps> = ({ columns, data, activeTab, isDarkMode, onCellClick }) => {
   const [searchParams, setSearchParams] = useSearchParams();
-  
-  // State for the copy feedback tick
-  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   // --- Read State from URL ---
   const currentPage = parseInt(searchParams.get('page') || '1', 10);
@@ -56,18 +95,6 @@ const DataTable: React.FC<DataTableProps> = ({ columns, data, activeTab, isDarkM
 
   const handleFilterChange = (key: string, value: string) => {
     updateParams({ [`f_${key}`]: value || null, page: '1' });
-  };
-
-  // Updated Copy handler with temporary feedback state
-  const handleCopy = (e: React.MouseEvent, text: string, cellId: string) => {
-    e.stopPropagation();
-    navigator.clipboard.writeText(text);
-    setCopiedId(cellId);
-    
-    // Revert back to the copy icon after 1.5 seconds
-    setTimeout(() => {
-      setCopiedId(null);
-    }, 1500);
   };
 
   // --- Data Processing ---
@@ -206,10 +233,6 @@ const DataTable: React.FC<DataTableProps> = ({ columns, data, activeTab, isDarkM
                     const targetIdKey = col.targetIdKey || 'id';
                     const targetId = row[targetIdKey];
 
-                    // Create a unique ID for this specific cell (Row ID + Column Key)
-                    const cellId = `${row.id || index}-${col.key}`;
-                    const isCopied = copiedId === cellId;
-
                     return (
                       <td key={col.key} className={`px-4 py-3 whitespace-nowrap ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                         {isNull ? (
@@ -224,22 +247,7 @@ const DataTable: React.FC<DataTableProps> = ({ columns, data, activeTab, isDarkM
                               {String(val)}
                             </button>
                             
-                            {/* Updated Copy Button - Always visible, handles tick animation */}
-                            <button
-                              onClick={(e) => handleCopy(e, String(val), cellId)}
-                              className={`p-1 rounded transition-colors focus:outline-none ${
-                                isDarkMode 
-                                  ? 'hover:bg-gray-700 text-gray-400 hover:text-gray-200' 
-                                  : 'hover:bg-gray-200 text-gray-400 hover:text-gray-700'
-                              }`}
-                              title="Copy to clipboard"
-                            >
-                              {isCopied ? (
-                                <Check size={14} className="text-green-500" />
-                              ) : (
-                                <Copy size={14} />
-                              )}
-                            </button>
+                            <ActionCopyButton text={String(val)} isDarkMode={isDarkMode} />
                           </div>
                         )}
                       </td>
