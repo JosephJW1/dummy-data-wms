@@ -66,7 +66,9 @@ export const SCHEMAS: Record<string, ColumnDef[]> = {
   Transactions: [
     { key: "id", label: "Transaction ID" },
     { key: "stockId", label: "Stock ID" },
+    { key: "locationFromId", label: "Location From ID" }, // <-- Added
     { key: "locationToId", label: "Location To ID" },
+    { key: "palletRefFrom", label: "Pallet Ref From" },   // <-- Added
     { key: "palletRefTo", label: "New Pallet Ref" },
     { key: "pickListId", label: "PickList ID" },
     { key: "quantity", label: "Quantity" },

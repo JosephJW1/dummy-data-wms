@@ -186,16 +186,19 @@ export default function Dashboard() {
       return data.map(row => {
         const stock = databases.Stocks.find(s => s.id === row.stockId);
         const product = stock ? databases.Products.find(p => p.id === stock.productId) : null;
-        const locationFrom = stock ? databases.Locations.find(l => l.id === stock.locationId) : null;
+        
+        // NOW we get the Location From based on the historical Transaction row, not the current Stock!
+        const locationFrom = databases.Locations.find(l => l.id === row.locationFromId); 
         const locationTo = databases.Locations.find(l => l.id === row.locationToId);
+        
         const pickList = databases.PickLists.find(pl => pl.id === row.pickListId);
         const user = databases.Users.find(u => u.id === row.completedByUser);
 
         return {
           ...row,
           _productId: product?.id || null,
-          _locationFromId: locationFrom?.id || null,
-          _locationToId: locationTo?.id || null,
+          _locationFromId: row.locationFromId || null, // Directly from row
+          _locationToId: row.locationToId || null,     // Directly from row
           _stockId: stock?.id || null,
           _pickListId: pickList?.id || null,
           _completedByUser: user?.id || null,
@@ -204,7 +207,7 @@ export default function Dashboard() {
           productDescription: product?.description || null,
           locationFrom: locationFrom?.code || null,
           locationTo: locationTo?.code || null,
-          palletRefFrom: stock?.palletRef || null,
+          palletRefFrom: row.palletRefFrom || null,   // Directly from row
           palletRefTo: row.palletRefTo || null,
           pickList: pickList?.ref || null,
           quantity: row.quantity || null,
