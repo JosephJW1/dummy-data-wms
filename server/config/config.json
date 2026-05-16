@@ -1,0 +1,21 @@
+{
+  "development": {
+    "username": "root",
+    "password": "YOUR_LOCAL_PASSWORD",
+    "database": "dummywarehousedb",
+    "host": "localhost",
+    "dialect": "mysql"
+  },
+  "test": {
+    "username": "root",
+    "password": null,
+    "database": "database_test",
+    "host": "127.0.0.1",
+    "dialect": "mysql"
+  },
+  "production": {
+    "use_env_variable": "MYSQL_URL",
+    "dialect": "mysql",
+    "logging": false
+  }
+}
