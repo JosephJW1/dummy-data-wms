@@ -13,8 +13,15 @@ const DEPOTS = [
 
 const ROUTES = ['01', '02', '03', '04', '05'];
 
+// --- TIMEZONE HELPERS (Matching Replenishment Service) ---
+const getUKDate = () => {
+  const ukTimeString = new Date().toLocaleString("en-US", { timeZone: "Europe/London" });
+  return new Date(ukTimeString);
+};
+
+// Generates the date format DDMMYY using the UK Date
 function getFormattedDate() {
-  const d = new Date();
+  const d = getUKDate();
   const dd = String(d.getDate()).padStart(2, '0');
   const mm = String(d.getMonth() + 1).padStart(2, '0');
   const yy = String(d.getFullYear()).slice(-2);
@@ -56,7 +63,7 @@ async function getStockForPick(productId) {
 
 async function generatePickListsForLateShift() {
   console.log("🛠️ Starting Pick List generation for the Late Shift...");
-  const dateStr = getFormattedDate();
+  const dateStr = getFormattedDate(); // Now safely generates UK Date
   const chambers = await Chamber.findAll();
 
   const dispatchLocation = await Location.findOne({ where: { code: 'DISPATCH' } });
@@ -83,7 +90,7 @@ async function generatePickListsForLateShift() {
 
         const pickList = await PickList.create({
           ref: ref,
-          dispatchDate: new Date()
+          dispatchDate: getUKDate() // Safely saves UK Date
         });
 
         if (eligibleProducts.length === 0) continue; 
@@ -136,8 +143,12 @@ cron.schedule(cronExpression, () => {
   generatePickListsForLateShift().catch(err => {
     console.error("❌ Error generating Pick Lists:", err);
   });
+}, {
+  scheduled: true,
+  timezone: "Europe/London" // Ensures the cron triggers on UK time
 });
-console.log(`⏱️ PickList Service Scheduled for Late Shift at ${lateShiftStartHour}:${String(lateShiftStartMin).padStart(2, '0')} daily.`);
+
+console.log(`⏱️ PickList Service Scheduled for Late Shift at ${lateShiftStartHour}:${String(lateShiftStartMin).padStart(2, '0')} (UK Time) daily.`);
 
 module.exports = {
   generatePickListsForLateShift
