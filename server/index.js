@@ -6,6 +6,7 @@ const db = require("./models");
 // ---> INITIATE BACKGROUND SERVICES <---
 require("./services/replenishmentService");
 require("./services/putAwayService");
+require("./services/pickListService");
 
 app.use(express.json());
 app.use(cors());

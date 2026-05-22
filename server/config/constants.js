@@ -1,7 +1,7 @@
 module.exports = {
   SHIFTS: {
     EARLY: { startHour: 4, startMinute: 48, endHour: 5, endMinute: 7 },
-    LATE: { startHour: 5, startMinute: 8, endHour: 5, endMinute: 27 }
+    LATE: { startHour: 2, startMinute: 10, endHour: 5, endMinute: 27 }
   },
   
   CRON_SCHEDULES: {
